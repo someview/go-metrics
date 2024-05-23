@@ -3,6 +3,7 @@ package metrics
 import (
 	"fmt"
 	"math"
+	"os"
 	"testing"
 	"time"
 )
@@ -98,4 +99,17 @@ func ExampleGetOrRegisterTimer() {
 	t := GetOrRegisterTimer(m, nil)
 	t.Update(47)
 	fmt.Println(t.Max()) // Output: 47
+}
+
+func TestDefaultTimer(t *testing.T) {
+	m := "account.create.latency"
+	timer := GetOrRegisterTimer(m, nil)
+	for i := 0; i < 1028; i++ {
+		timer.Update(time.Second)
+	}
+	WriteOnce(DefaultRegistry, os.Stdout)
+	for i := 0; i < 10; i++ {
+		timer.Update(time.Minute)
+	}
+	WriteOnce(DefaultRegistry, os.Stdout)
 }
