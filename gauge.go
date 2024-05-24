@@ -20,9 +20,6 @@ func GetOrRegisterGauge(name string, r Registry) Gauge {
 
 // NewGauge constructs a new StandardGauge.
 func NewGauge() Gauge {
-	if UseNilMetrics {
-		return NilGauge{}
-	}
 	return &StandardGauge{0}
 }
 
@@ -38,9 +35,6 @@ func NewRegisteredGauge(name string, r Registry) Gauge {
 
 // NewFunctionalGauge constructs a new FunctionalGauge.
 func NewFunctionalGauge(f func() int64) Gauge {
-	if UseNilMetrics {
-		return NilGauge{}
-	}
 	return &FunctionalGauge{value: f}
 }
 
@@ -67,18 +61,6 @@ func (GaugeSnapshot) Update(int64) {
 
 // Value returns the value at the time the snapshot was taken.
 func (g GaugeSnapshot) Value() int64 { return int64(g) }
-
-// NilGauge is a no-op Gauge.
-type NilGauge struct{}
-
-// Snapshot is a no-op.
-func (NilGauge) Snapshot() Gauge { return NilGauge{} }
-
-// Update is a no-op.
-func (NilGauge) Update(v int64) {}
-
-// Value is a no-op.
-func (NilGauge) Value() int64 { return 0 }
 
 // StandardGauge is the standard implementation of a Gauge and uses the
 // sync/atomic package to manage a single int64 value.

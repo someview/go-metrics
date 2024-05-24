@@ -30,9 +30,6 @@ func GetOrRegisterHistogram(name string, r Registry, s Sample) Histogram {
 
 // NewHistogram constructs a new StandardHistogram from a Sample.
 func NewHistogram(s Sample) Histogram {
-	if UseNilMetrics {
-		return NilHistogram{}
-	}
 	return &StandardHistogram{sample: s}
 }
 

@@ -23,9 +23,6 @@ func GetOrRegisterGaugeFloat64(name string, r Registry) GaugeFloat64 {
 
 // NewGaugeFloat64 constructs a new StandardGaugeFloat64.
 func NewGaugeFloat64() GaugeFloat64 {
-	if UseNilMetrics {
-		return NilGaugeFloat64{}
-	}
 	return &StandardGaugeFloat64{
 		value: 0.0,
 	}
@@ -43,9 +40,6 @@ func NewRegisteredGaugeFloat64(name string, r Registry) GaugeFloat64 {
 
 // NewFunctionalGauge constructs a new FunctionalGauge.
 func NewFunctionalGaugeFloat64(f func() float64) GaugeFloat64 {
-	if UseNilMetrics {
-		return NilGaugeFloat64{}
-	}
 	return &FunctionalGaugeFloat64{value: f}
 }
 
@@ -72,18 +66,6 @@ func (GaugeFloat64Snapshot) Update(float64) {
 
 // Value returns the value at the time the snapshot was taken.
 func (g GaugeFloat64Snapshot) Value() float64 { return float64(g) }
-
-// NilGauge is a no-op Gauge.
-type NilGaugeFloat64 struct{}
-
-// Snapshot is a no-op.
-func (NilGaugeFloat64) Snapshot() GaugeFloat64 { return NilGaugeFloat64{} }
-
-// Update is a no-op.
-func (NilGaugeFloat64) Update(v float64) {}
-
-// Value is a no-op.
-func (NilGaugeFloat64) Value() float64 { return 0.0 }
 
 // StandardGaugeFloat64 is the standard implementation of a GaugeFloat64 and uses
 // sync.Mutex to manage a single float64 value.

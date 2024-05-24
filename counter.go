@@ -22,9 +22,6 @@ func GetOrRegisterCounter(name string, r Registry) Counter {
 
 // NewCounter constructs a new StandardCounter.
 func NewCounter() Counter {
-	if UseNilMetrics {
-		return NilCounter{}
-	}
 	return &StandardCounter{0}
 }
 

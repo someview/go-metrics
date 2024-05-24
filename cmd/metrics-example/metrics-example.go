@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"github.com/rcrowley/go-metrics"
-	// "github.com/rcrowley/go-metrics/stathat"
+	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/sample"
 	"log"
 	"math/rand"
 	"os"
@@ -77,7 +77,7 @@ func main() {
 	})
 	r.Register("baz", hc)
 
-	s := metrics.NewExpDecaySample(1028, 0.015)
+	s := sample.NewExpDecaySample(1028, 0.015)
 	//s := metrics.NewUniformSample(1028)
 	h := metrics.NewHistogram(s)
 	r.Register("bang", h)
