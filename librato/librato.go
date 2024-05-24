@@ -2,6 +2,12 @@ package librato
 
 import (
 	"fmt"
+	"github.com/someview/go-metrics/counter"
+	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/sample"
+	"github.com/someview/go-metrics/timer"
 	"log"
 	"math"
 	"regexp"
@@ -60,7 +66,7 @@ func (self *Reporter) Run() {
 
 // calculate sum of squares from data provided by metrics.Histogram
 // see http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
-func sumSquares(s metrics.Sample) float64 {
+func sumSquares(s sample.Sample) float64 {
 	count := float64(s.Count())
 	sumSquared := math.Pow(count*s.Mean(), 2)
 	sumSquares := math.Pow(count*s.StdDev(), 2) + sumSquared/count
@@ -69,7 +75,7 @@ func sumSquares(s metrics.Sample) float64 {
 	}
 	return sumSquares
 }
-func sumSquaresTimer(t metrics.Timer) float64 {
+func sumSquaresTimer(t timer.Timer) float64 {
 	count := float64(t.Count())
 	sumSquared := math.Pow(count*t.Mean(), 2)
 	sumSquares := math.Pow(count*t.StdDev(), 2) + sumSquared/count
@@ -95,7 +101,7 @@ func (self *Reporter) BuildRequest(now time.Time, r metrics.Registry) (snapshot 
 		measurement := Measurement{}
 		measurement[Period] = self.Interval.Seconds()
 		switch m := metric.(type) {
-		case metrics.Counter:
+		case counter.Counter:
 			if m.Count() > 0 {
 				measurement[Name] = fmt.Sprintf("%s.%s", name, "count")
 				measurement[Value] = float64(m.Count())
@@ -106,15 +112,15 @@ func (self *Reporter) BuildRequest(now time.Time, r metrics.Registry) (snapshot 
 				}
 				snapshot.Counters = append(snapshot.Counters, measurement)
 			}
-		case metrics.Gauge:
+		case guage.Gauge:
 			measurement[Name] = name
 			measurement[Value] = float64(m.Value())
 			snapshot.Gauges = append(snapshot.Gauges, measurement)
-		case metrics.GaugeFloat64:
+		case guage.GaugeFloat64:
 			measurement[Name] = name
 			measurement[Value] = float64(m.Value())
 			snapshot.Gauges = append(snapshot.Gauges, measurement)
-		case metrics.Histogram:
+		case histogram.Histogram:
 			if m.Count() > 0 {
 				gauges := make([]Measurement, histogramGaugeCount, histogramGaugeCount)
 				s := m.Sample()
@@ -134,7 +140,7 @@ func (self *Reporter) BuildRequest(now time.Time, r metrics.Registry) (snapshot 
 				}
 				snapshot.Gauges = append(snapshot.Gauges, gauges...)
 			}
-		case metrics.Meter:
+		case meter.Meter:
 			measurement[Name] = name
 			measurement[Value] = float64(m.Count())
 			snapshot.Counters = append(snapshot.Counters, measurement)
@@ -170,7 +176,7 @@ func (self *Reporter) BuildRequest(now time.Time, r metrics.Registry) (snapshot 
 					},
 				},
 			)
-		case metrics.Timer:
+		case timer.Timer:
 			measurement[Name] = name
 			measurement[Value] = float64(m.Count())
 			snapshot.Counters = append(snapshot.Counters, measurement)

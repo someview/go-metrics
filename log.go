@@ -1,6 +1,11 @@
 package metrics
 
 import (
+	"github.com/someview/go-metrics/counter"
+	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/timer"
 	"time"
 )
 
@@ -41,20 +46,20 @@ func LogScaledOnCue(r Registry, ch chan interface{}, scale time.Duration, l Logg
 	for _ = range ch {
 		r.Each(func(name string, i interface{}) {
 			switch metric := i.(type) {
-			case Counter:
+			case counter.Counter:
 				l.Printf("counter %s\n", name)
 				l.Printf("  count:       %9d\n", metric.Count())
-			case Gauge:
+			case guage.Gauge:
 				l.Printf("gauge %s\n", name)
 				l.Printf("  value:       %9d\n", metric.Value())
-			case GaugeFloat64:
+			case guage.GaugeFloat64:
 				l.Printf("gauge %s\n", name)
 				l.Printf("  value:       %f\n", metric.Value())
 			case Healthcheck:
 				metric.Check()
 				l.Printf("healthcheck %s\n", name)
 				l.Printf("  error:       %v\n", metric.Error())
-			case Histogram:
+			case histogram.Histogram:
 				h := metric.Snapshot()
 				ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 				l.Printf("histogram %s\n", name)
@@ -68,7 +73,7 @@ func LogScaledOnCue(r Registry, ch chan interface{}, scale time.Duration, l Logg
 				l.Printf("  95%%:         %12.2f\n", ps[2])
 				l.Printf("  99%%:         %12.2f\n", ps[3])
 				l.Printf("  99.9%%:       %12.2f\n", ps[4])
-			case Meter:
+			case meter.Meter:
 				m := metric.Snapshot()
 				l.Printf("meter %s\n", name)
 				l.Printf("  count:       %9d\n", m.Count())
@@ -76,7 +81,7 @@ func LogScaledOnCue(r Registry, ch chan interface{}, scale time.Duration, l Logg
 				l.Printf("  5-min rate:  %12.2f\n", m.Rate5())
 				l.Printf("  15-min rate: %12.2f\n", m.Rate15())
 				l.Printf("  mean rate:   %12.2f\n", m.RateMean())
-			case Timer:
+			case timer.Timer:
 				t := metric.Snapshot()
 				ps := t.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 				l.Printf("timer %s\n", name)

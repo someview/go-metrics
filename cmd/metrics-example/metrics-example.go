@@ -1,11 +1,15 @@
 package main
 
 import (
-	"errors"
 	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/counter"
+	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/meter"
 	"github.com/someview/go-metrics/sample"
+	"github.com/someview/go-metrics/state"
+	"github.com/someview/go-metrics/timer"
 	"log"
-	"math/rand"
 	"os"
 	// "syslog"
 	"time"
@@ -17,7 +21,7 @@ func main() {
 
 	r := metrics.NewRegistry()
 
-	c := metrics.NewCounter()
+	c := counter.NewCounter()
 	r.Register("foo", c)
 	for i := 0; i < fanout; i++ {
 		go func() {
@@ -34,7 +38,7 @@ func main() {
 		}()
 	}
 
-	g := metrics.NewGauge()
+	g := guage.NewGauge()
 	r.Register("bar", g)
 	for i := 0; i < fanout; i++ {
 		go func() {
@@ -51,7 +55,7 @@ func main() {
 		}()
 	}
 
-	gf := metrics.NewGaugeFloat64()
+	gf := guage.NewGaugeFloat64()
 	r.Register("barfloat64", gf)
 	for i := 0; i < fanout; i++ {
 		go func() {
@@ -68,18 +72,9 @@ func main() {
 		}()
 	}
 
-	hc := metrics.NewHealthcheck(func(h metrics.Healthcheck) {
-		if 0 < rand.Intn(2) {
-			h.Healthy()
-		} else {
-			h.Unhealthy(errors.New("baz"))
-		}
-	})
-	r.Register("baz", hc)
-
 	s := sample.NewExpDecaySample(1028, 0.015)
 	//s := metrics.NewUniformSample(1028)
-	h := metrics.NewHistogram(s)
+	h := histogram.NewHistogram(s)
 	r.Register("bang", h)
 	for i := 0; i < fanout; i++ {
 		go func() {
@@ -96,7 +91,7 @@ func main() {
 		}()
 	}
 
-	m := metrics.NewMeter()
+	m := meter.NewMeter()
 	r.Register("quux", m)
 	for i := 0; i < fanout; i++ {
 		go func() {
@@ -113,7 +108,7 @@ func main() {
 		}()
 	}
 
-	t := metrics.NewTimer()
+	t := timer.NewTimer()
 	r.Register("hooah", t)
 	for i := 0; i < fanout; i++ {
 		go func() {
@@ -128,11 +123,11 @@ func main() {
 		}()
 	}
 
-	metrics.RegisterDebugGCStats(r)
-	go metrics.CaptureDebugGCStats(r, 5e9)
+	state.RegisterDebugGCStats(r)
+	go state.CaptureDebugGCStats(r, 5e9)
 
-	metrics.RegisterRuntimeMemStats(r)
-	go metrics.CaptureRuntimeMemStats(r, 5e9)
+	state.RegisterRuntimeMemStats(r)
+	go state.CaptureRuntimeMemStats(r, 5e9)
 
 	metrics.Log(r, 60e9, log.New(os.Stderr, "metrics: ", log.Lmicroseconds))
 

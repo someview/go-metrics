@@ -5,6 +5,11 @@ package exp
 import (
 	"expvar"
 	"fmt"
+	"github.com/someview/go-metrics/counter"
+	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/timer"
 	"net/http"
 	"sync"
 
@@ -20,7 +25,7 @@ func (exp *exp) expHandler(w http.ResponseWriter, r *http.Request) {
 	// load our variables into expvar
 	exp.syncToExpvar()
 
-	// now just run the official expvar handler code (which is not publicly callable, so pasted inline)
+	// now just state the official expvar handler code (which is not publicly callable, so pasted inline)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, "{\n")
 	first := true
@@ -78,20 +83,20 @@ func (exp *exp) getFloat(name string) *expvar.Float {
 	return v
 }
 
-func (exp *exp) publishCounter(name string, metric metrics.Counter) {
+func (exp *exp) publishCounter(name string, metric counter.Counter) {
 	v := exp.getInt(name)
 	v.Set(metric.Count())
 }
 
-func (exp *exp) publishGauge(name string, metric metrics.Gauge) {
+func (exp *exp) publishGauge(name string, metric guage.Gauge) {
 	v := exp.getInt(name)
 	v.Set(metric.Value())
 }
-func (exp *exp) publishGaugeFloat64(name string, metric metrics.GaugeFloat64) {
+func (exp *exp) publishGaugeFloat64(name string, metric guage.GaugeFloat64) {
 	exp.getFloat(name).Set(metric.Value())
 }
 
-func (exp *exp) publishHistogram(name string, metric metrics.Histogram) {
+func (exp *exp) publishHistogram(name string, metric histogram.Histogram) {
 	h := metric.Snapshot()
 	ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 	exp.getInt(name + ".count").Set(h.Count())
@@ -106,7 +111,7 @@ func (exp *exp) publishHistogram(name string, metric metrics.Histogram) {
 	exp.getFloat(name + ".999-percentile").Set(float64(ps[4]))
 }
 
-func (exp *exp) publishMeter(name string, metric metrics.Meter) {
+func (exp *exp) publishMeter(name string, metric meter.Meter) {
 	m := metric.Snapshot()
 	exp.getInt(name + ".count").Set(m.Count())
 	exp.getFloat(name + ".one-minute").Set(float64(m.Rate1()))
@@ -115,7 +120,7 @@ func (exp *exp) publishMeter(name string, metric metrics.Meter) {
 	exp.getFloat(name + ".mean").Set(float64(m.RateMean()))
 }
 
-func (exp *exp) publishTimer(name string, metric metrics.Timer) {
+func (exp *exp) publishTimer(name string, metric timer.Timer) {
 	t := metric.Snapshot()
 	ps := t.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 	exp.getInt(name + ".count").Set(t.Count())
@@ -137,18 +142,18 @@ func (exp *exp) publishTimer(name string, metric metrics.Timer) {
 func (exp *exp) syncToExpvar() {
 	exp.registry.Each(func(name string, i interface{}) {
 		switch i.(type) {
-		case metrics.Counter:
-			exp.publishCounter(name, i.(metrics.Counter))
-		case metrics.Gauge:
-			exp.publishGauge(name, i.(metrics.Gauge))
-		case metrics.GaugeFloat64:
-			exp.publishGaugeFloat64(name, i.(metrics.GaugeFloat64))
-		case metrics.Histogram:
-			exp.publishHistogram(name, i.(metrics.Histogram))
-		case metrics.Meter:
-			exp.publishMeter(name, i.(metrics.Meter))
-		case metrics.Timer:
-			exp.publishTimer(name, i.(metrics.Timer))
+		case counter.Counter:
+			exp.publishCounter(name, i.(counter.Counter))
+		case guage.Gauge:
+			exp.publishGauge(name, i.(guage.Gauge))
+		case guage.GaugeFloat64:
+			exp.publishGaugeFloat64(name, i.(guage.GaugeFloat64))
+		case histogram.Histogram:
+			exp.publishHistogram(name, i.(histogram.Histogram))
+		case meter.Meter:
+			exp.publishMeter(name, i.(meter.Meter))
+		case timer.Timer:
+			exp.publishTimer(name, i.(timer.Timer))
 		default:
 			panic(fmt.Sprintf("unsupported type for '%s': %T", name, i))
 		}

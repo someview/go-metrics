@@ -2,6 +2,11 @@ package metrics
 
 import (
 	"fmt"
+	"github.com/someview/go-metrics/counter"
+	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/timer"
 	"reflect"
 	"strings"
 	"sync"
@@ -39,9 +44,6 @@ type Registry interface {
 
 	// Register the given metric under the given name.
 	Register(string, interface{}) error
-
-	// Run all registered healthchecks.
-	RunHealthchecks()
 
 	// Unregister the metric with the given name.
 	Unregister(string)
@@ -112,36 +114,19 @@ func (r *StandardRegistry) Register(name string, i interface{}) error {
 	return r.register(name, i)
 }
 
-// Run all registered healthchecks.
-func (r *StandardRegistry) RunHealthchecks() {
-	r.mutex.RLock()
-	defer r.mutex.RUnlock()
-	for _, i := range r.metrics {
-		if h, ok := i.(Healthcheck); ok {
-			h.Check()
-		}
-	}
-}
-
 // GetAll metrics in the Registry
 func (r *StandardRegistry) GetAll() map[string]map[string]interface{} {
 	data := make(map[string]map[string]interface{})
 	r.Each(func(name string, i interface{}) {
 		values := make(map[string]interface{})
 		switch metric := i.(type) {
-		case Counter:
+		case counter.Counter:
 			values["count"] = metric.Count()
-		case Gauge:
+		case guage.Gauge:
 			values["value"] = metric.Value()
-		case GaugeFloat64:
+		case guage.GaugeFloat64:
 			values["value"] = metric.Value()
-		case Healthcheck:
-			values["error"] = nil
-			metric.Check()
-			if err := metric.Error(); nil != err {
-				values["error"] = metric.Error().Error()
-			}
-		case Histogram:
+		case histogram.Histogram:
 			h := metric.Snapshot()
 			ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 			values["count"] = h.Count()
@@ -154,14 +139,14 @@ func (r *StandardRegistry) GetAll() map[string]map[string]interface{} {
 			values["95%"] = ps[2]
 			values["99%"] = ps[3]
 			values["99.9%"] = ps[4]
-		case Meter:
+		case meter.Meter:
 			m := metric.Snapshot()
 			values["count"] = m.Count()
 			values["1m.rate"] = m.Rate1()
 			values["5m.rate"] = m.Rate5()
 			values["15m.rate"] = m.Rate15()
 			values["mean.rate"] = m.RateMean()
-		case Timer:
+		case timer.Timer:
 			t := metric.Snapshot()
 			ps := t.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
 			values["count"] = t.Count()
@@ -207,7 +192,7 @@ func (r *StandardRegistry) register(name string, i interface{}) error {
 		return DuplicateMetric(name)
 	}
 	switch i.(type) {
-	case Counter, Gauge, GaugeFloat64, Healthcheck, Histogram, Meter, Timer:
+	case counter.Counter, guage.Gauge, guage.GaugeFloat64, histogram.Histogram, meter.Meter, timer.Timer:
 		r.metrics[name] = i
 	}
 	return nil
@@ -309,11 +294,6 @@ func (r *PrefixedRegistry) Register(name string, metric interface{}) error {
 	return r.underlying.Register(realName, metric)
 }
 
-// Run all registered healthchecks.
-func (r *PrefixedRegistry) RunHealthchecks() {
-	r.underlying.RunHealthchecks()
-}
-
 // GetAll metrics in the Registry
 func (r *PrefixedRegistry) GetAll() map[string]map[string]interface{} {
 	return r.underlying.GetAll()
@@ -360,11 +340,6 @@ func MustRegister(name string, i interface{}) {
 	if err := Register(name, i); err != nil {
 		panic(err)
 	}
-}
-
-// Run all registered healthchecks.
-func RunHealthchecks() {
-	DefaultRegistry.RunHealthchecks()
 }
 
 // Unregister the metric with the given name.
