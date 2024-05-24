@@ -1,7 +1,7 @@
 //go:build !windows
 // +build !windows
 
-package storage
+package reporter
 
 import (
 	"fmt"
@@ -10,7 +10,6 @@ import (
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
-	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/timer"
 	"log/syslog"
 	"time"
@@ -18,7 +17,7 @@ import (
 
 // Output each metric in the given registry to syslog periodically using
 // the given syslogger.
-func Syslog(r reporter.Registry, d time.Duration, w *syslog.Writer) {
+func Syslog(r Registry, d time.Duration, w *syslog.Writer) {
 	for _ = range time.Tick(d) {
 		r.Each(func(name string, i interface{}) {
 			switch metric := i.(type) {

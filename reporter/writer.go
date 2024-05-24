@@ -1,13 +1,11 @@
-package storage
+package reporter
 
 import (
 	"fmt"
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/counter"
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
-	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/timer"
 	"io"
 	"sort"
@@ -16,7 +14,7 @@ import (
 
 // Write sorts writes each metric in the given registry periodically to the
 // given io.Writer.
-func Write(r reporter.Registry, d time.Duration, w io.Writer) {
+func Write(r Registry, d time.Duration, w io.Writer) {
 	for _ = range time.Tick(d) {
 		WriteOnce(r, w)
 	}
@@ -24,7 +22,7 @@ func Write(r reporter.Registry, d time.Duration, w io.Writer) {
 
 // WriteOnce sorts and writes metrics in the given registry to the given
 // io.Writer.
-func WriteOnce(r reporter.Registry, w io.Writer) {
+func WriteOnce(r Registry, w io.Writer) {
 	var namedMetrics namedMetricSlice
 	r.Each(func(name string, i interface{}) {
 		namedMetrics = append(namedMetrics, namedMetric{name, i})
@@ -42,10 +40,6 @@ func WriteOnce(r reporter.Registry, w io.Writer) {
 		case guage.GaugeFloat64:
 			fmt.Fprintf(w, "gauge %s\n", namedMetric.name)
 			fmt.Fprintf(w, "  value:       %f\n", metric.Value())
-		case metrics.Healthcheck:
-			metric.Check()
-			fmt.Fprintf(w, "healthcheck %s\n", namedMetric.name)
-			fmt.Fprintf(w, "  error:       %v\n", metric.Error())
 		case histogram.Histogram:
 			h := metric.Snapshot()
 			ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})

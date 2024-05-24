@@ -1,8 +1,6 @@
 package guage
 
 import (
-	"fmt"
-	"github.com/someview/go-metrics/reporter"
 	"math/rand"
 	"sync"
 	"testing"
@@ -51,14 +49,6 @@ func TestGaugeSnapshot(t *testing.T) {
 	}
 }
 
-func TestGetOrRegisterGauge(t *testing.T) {
-	r := reporter.NewRegistry()
-	NewRegisteredGauge("foo", r).Update(47)
-	if g := GetOrRegisterGauge("foo", r); 47 != g.Value() {
-		t.Fatal(g)
-	}
-}
-
 func TestFunctionalGauge(t *testing.T) {
 	var counter int64
 	fg := NewFunctionalGauge(func() int64 {
@@ -70,19 +60,4 @@ func TestFunctionalGauge(t *testing.T) {
 	if counter != 2 {
 		t.Error("counter != 2")
 	}
-}
-
-func TestGetOrRegisterFunctionalGauge(t *testing.T) {
-	r := reporter.NewRegistry()
-	NewRegisteredFunctionalGauge("foo", r, func() int64 { return 47 })
-	if g := GetOrRegisterGauge("foo", r); 47 != g.Value() {
-		t.Fatal(g)
-	}
-}
-
-func ExampleGetOrRegisterGauge() {
-	m := "server.bytes_sent"
-	g := GetOrRegisterGauge(m, nil)
-	g.Update(47)
-	fmt.Println(g.Value()) // Output: 47
 }

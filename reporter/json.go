@@ -1,21 +1,20 @@
-package storage
+package reporter
 
 import (
 	"encoding/json"
-	"github.com/someview/go-metrics/reporter"
 	"io"
 	"time"
 )
 
 // MarshalJSON returns a byte slice containing a JSON representation of all
 // the metrics in the Registry.
-func (r *reporter.StandardRegistry) MarshalJSON() ([]byte, error) {
+func (r *StandardRegistry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.GetAll())
 }
 
 // WriteJSON writes metrics from the given registry  periodically to the
 // specified io.Writer as JSON.
-func WriteJSON(r reporter.Registry, d time.Duration, w io.Writer) {
+func WriteJSON(r Registry, d time.Duration, w io.Writer) {
 	for _ = range time.Tick(d) {
 		WriteJSONOnce(r, w)
 	}
@@ -23,10 +22,10 @@ func WriteJSON(r reporter.Registry, d time.Duration, w io.Writer) {
 
 // WriteJSONOnce writes metrics from the given registry to the specified
 // io.Writer as JSON.
-func WriteJSONOnce(r reporter.Registry, w io.Writer) {
+func WriteJSONOnce(r Registry, w io.Writer) {
 	json.NewEncoder(w).Encode(r)
 }
 
-func (p *reporter.PrefixedRegistry) MarshalJSON() ([]byte, error) {
+func (p *PrefixedRegistry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.GetAll())
 }

@@ -1,12 +1,7 @@
 package timer
 
 import (
-	"fmt"
-	"github.com/someview/go-metrics"
-	"github.com/someview/go-metrics/reporter"
-	"github.com/someview/go-metrics/storage"
 	"math"
-	"os"
 	"testing"
 	"time"
 )
@@ -19,32 +14,12 @@ func BenchmarkTimer(b *testing.B) {
 	}
 }
 
-func TestGetOrRegisterTimer(t *testing.T) {
-	r := reporter.NewRegistry()
-	NewRegisteredTimer("foo", r).Update(47)
-	if tm := GetOrRegisterTimer("foo", r); 1 != tm.Count() {
-		t.Fatal(tm)
-	}
-}
-
 func TestTimerExtremes(t *testing.T) {
 	tm := NewTimer()
 	tm.Update(math.MaxInt64)
 	tm.Update(0)
 	if stdDev := tm.StdDev(); 4.611686018427388e+18 != stdDev {
 		t.Errorf("tm.StdDev(): 4.611686018427388e+18 != %v\n", stdDev)
-	}
-}
-
-func TestTimerStop(t *testing.T) {
-	l := len(metrics.arbiter.meters)
-	tm := NewTimer()
-	if len(metrics.arbiter.meters) != l+1 {
-		t.Errorf("arbiter.meters: %d != %d\n", l+1, len(metrics.arbiter.meters))
-	}
-	tm.Stop()
-	if len(metrics.arbiter.meters) != l {
-		t.Errorf("arbiter.meters: %d != %d\n", l, len(metrics.arbiter.meters))
 	}
 }
 
@@ -95,24 +70,4 @@ func TestTimerZero(t *testing.T) {
 	if rateMean := tm.RateMean(); 0.0 != rateMean {
 		t.Errorf("tm.RateMean(): 0.0 != %v\n", rateMean)
 	}
-}
-
-func ExampleGetOrRegisterTimer() {
-	m := "account.create.latency"
-	t := GetOrRegisterTimer(m, nil)
-	t.Update(47)
-	fmt.Println(t.Max()) // Output: 47
-}
-
-func TestDefaultTimer(t *testing.T) {
-	m := "account.create.latency"
-	timer := GetOrRegisterTimer(m, nil)
-	for i := 0; i < 1028; i++ {
-		timer.Update(time.Second)
-	}
-	storage.WriteOnce(reporter.DefaultRegistry, os.Stdout)
-	for i := 0; i < 10; i++ {
-		timer.Update(time.Minute)
-	}
-	storage.WriteOnce(reporter.DefaultRegistry, os.Stdout)
 }

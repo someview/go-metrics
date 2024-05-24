@@ -6,6 +6,7 @@ import (
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
 	"github.com/someview/go-metrics/sample"
+	"github.com/someview/go-metrics/timer"
 )
 
 // GetOrRegisterCounter returns an existing Counter or constructs and registers
@@ -53,4 +54,15 @@ func GetOrRegisterMeter(name string, r Registry) meter.Meter {
 		r = DefaultRegistry
 	}
 	return r.GetOrRegister(name, meter.NewMeter).(meter.Meter)
+}
+
+// GetOrRegisterTimer returns an existing Timer or constructs and registers a
+// new StandardTimer.
+// Be sure to unregister the meter from the registry once it is of no use to
+// allow for garbage collection.
+func GetOrRegisterTimer(name string, r Registry) timer.Timer {
+	if nil == r {
+		r = DefaultRegistry
+	}
+	return r.GetOrRegister(name, timer.NewTimer).(timer.Timer)
 }

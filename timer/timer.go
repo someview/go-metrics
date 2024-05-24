@@ -3,7 +3,6 @@ package timer
 import (
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
-	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/sample"
 	"sync"
 	"time"
@@ -31,17 +30,6 @@ type Timer interface {
 	Variance() float64
 }
 
-// GetOrRegisterTimer returns an existing Timer or constructs and registers a
-// new StandardTimer.
-// Be sure to unregister the meter from the registry once it is of no use to
-// allow for garbage collection.
-func GetOrRegisterTimer(name string, r reporter.Registry) Timer {
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	return r.GetOrRegister(name, NewTimer).(Timer)
-}
-
 // NewCustomTimer constructs a new StandardTimer from a Histogram and a Meter.
 // Be sure to call Stop() once the timer is of no use to allow for garbage collection.
 func NewCustomTimer(h histogram.Histogram, m meter.Meter) Timer {
@@ -49,18 +37,6 @@ func NewCustomTimer(h histogram.Histogram, m meter.Meter) Timer {
 		histogram: h,
 		meter:     m,
 	}
-}
-
-// NewRegisteredTimer constructs and registers a new StandardTimer.
-// Be sure to unregister the meter from the registry once it is of no use to
-// allow for garbage collection.
-func NewRegisteredTimer(name string, r reporter.Registry) Timer {
-	c := NewTimer()
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
 }
 
 // NewTimer constructs a new StandardTimer using an exponentially-decaying

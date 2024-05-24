@@ -1,7 +1,6 @@
 package histogram
 
 import (
-	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/sample"
 	"testing"
 )
@@ -11,15 +10,6 @@ func BenchmarkHistogram(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		h.Update(int64(i))
-	}
-}
-
-func TestGetOrRegisterHistogram(t *testing.T) {
-	r := reporter.NewRegistry()
-	s := sample.NewUniformSample(100)
-	NewRegisteredHistogram("foo", r, s).Update(47)
-	if h := GetOrRegisterHistogram("foo", r, s); 1 != h.Count() {
-		t.Fatal(h)
 	}
 }
 
