@@ -1,7 +1,7 @@
 package guage
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"math"
 	"sync/atomic"
 )
@@ -15,9 +15,9 @@ type GaugeFloat64 interface {
 
 // GetOrRegisterGaugeFloat64 returns an existing GaugeFloat64 or constructs and registers a
 // new StandardGaugeFloat64.
-func GetOrRegisterGaugeFloat64(name string, r metrics.Registry) GaugeFloat64 {
+func GetOrRegisterGaugeFloat64(name string, r reporter.Registry) GaugeFloat64 {
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	return r.GetOrRegister(name, NewGaugeFloat64()).(GaugeFloat64)
 }
@@ -30,10 +30,10 @@ func NewGaugeFloat64() GaugeFloat64 {
 }
 
 // NewRegisteredGaugeFloat64 constructs and registers a new StandardGaugeFloat64.
-func NewRegisteredGaugeFloat64(name string, r metrics.Registry) GaugeFloat64 {
+func NewRegisteredGaugeFloat64(name string, r reporter.Registry) GaugeFloat64 {
 	c := NewGaugeFloat64()
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	r.Register(name, c)
 	return c
@@ -45,10 +45,10 @@ func NewFunctionalGaugeFloat64(f func() float64) GaugeFloat64 {
 }
 
 // NewRegisteredFunctionalGauge constructs and registers a new StandardGauge.
-func NewRegisteredFunctionalGaugeFloat64(name string, r metrics.Registry, f func() float64) GaugeFloat64 {
+func NewRegisteredFunctionalGaugeFloat64(name string, r reporter.Registry, f func() float64) GaugeFloat64 {
 	c := NewFunctionalGaugeFloat64(f)
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	r.Register(name, c)
 	return c

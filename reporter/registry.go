@@ -1,4 +1,4 @@
-package metrics
+package reporter
 
 import (
 	"fmt"

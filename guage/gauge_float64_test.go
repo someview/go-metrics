@@ -1,7 +1,7 @@
 package guage
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"testing"
 )
 
@@ -42,7 +42,7 @@ func TestGaugeFloat64Snapshot(t *testing.T) {
 }
 
 func TestGetOrRegisterGaugeFloat64(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredGaugeFloat64("foo", r).Update(float64(47.0))
 	t.Logf("registry: %v", r)
 	if g := GetOrRegisterGaugeFloat64("foo", r); float64(47.0) != g.Value() {
@@ -64,7 +64,7 @@ func TestFunctionalGaugeFloat64(t *testing.T) {
 }
 
 func TestGetOrRegisterFunctionalGaugeFloat64(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredFunctionalGaugeFloat64("foo", r, func() float64 { return 47 })
 	if g := GetOrRegisterGaugeFloat64("foo", r); 47 != g.Value() {
 		t.Fatal(g)

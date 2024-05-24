@@ -1,9 +1,9 @@
 package state
 
 import (
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/sample"
 	"github.com/someview/go-metrics/timer"
 	"runtime"
@@ -61,7 +61,7 @@ var (
 
 // Capture new values for the Go state statistics exported in
 // state.MemStats.  This is designed to be called as a goroutine.
-func CaptureRuntimeMemStats(r metrics.Registry, d time.Duration) {
+func CaptureRuntimeMemStats(r reporter.Registry, d time.Duration) {
 	for _ = range time.Tick(d) {
 		CaptureRuntimeMemStatsOnce(r)
 	}
@@ -75,7 +75,7 @@ func CaptureRuntimeMemStats(r metrics.Registry, d time.Duration) {
 // Be very careful with this because state.ReadMemStats calls the C
 // functions state·semacquire(&state·worldsema) and state·stoptheworld()
 // and that last one does what it says on the tin.
-func CaptureRuntimeMemStatsOnce(r metrics.Registry) {
+func CaptureRuntimeMemStatsOnce(r reporter.Registry) {
 	t := time.Now()
 	runtime.ReadMemStats(&memStats) // This takes 50-200us.
 	runtimeMetrics.ReadMemStats.UpdateSince(t)
@@ -152,7 +152,7 @@ func CaptureRuntimeMemStatsOnce(r metrics.Registry) {
 // Register runtimeMetrics for the Go state statistics exported in state and
 // specifically state.MemStats.  The runtimeMetrics are named by their
 // fully-qualified Go symbols, i.e. state.MemStats.Alloc.
-func RegisterRuntimeMemStats(r metrics.Registry) {
+func RegisterRuntimeMemStats(r reporter.Registry) {
 	registerRuntimeMetricsOnce.Do(func() {
 		runtimeMetrics.MemStats.Alloc = guage.NewGauge()
 		runtimeMetrics.MemStats.BuckHashSys = guage.NewGauge()

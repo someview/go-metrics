@@ -7,6 +7,7 @@ import (
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/timer"
 	"io"
 	"sort"
@@ -15,7 +16,7 @@ import (
 
 // Write sorts writes each metric in the given registry periodically to the
 // given io.Writer.
-func Write(r metrics.Registry, d time.Duration, w io.Writer) {
+func Write(r reporter.Registry, d time.Duration, w io.Writer) {
 	for _ = range time.Tick(d) {
 		WriteOnce(r, w)
 	}
@@ -23,7 +24,7 @@ func Write(r metrics.Registry, d time.Duration, w io.Writer) {
 
 // WriteOnce sorts and writes metrics in the given registry to the given
 // io.Writer.
-func WriteOnce(r metrics.Registry, w io.Writer) {
+func WriteOnce(r reporter.Registry, w io.Writer) {
 	var namedMetrics namedMetricSlice
 	r.Each(func(name string, i interface{}) {
 		namedMetrics = append(namedMetrics, namedMetric{name, i})

@@ -1,15 +1,15 @@
 package state
 
 import (
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/reporter"
 	"runtime"
 	"testing"
 	"time"
 )
 
 func TestRuntimeMemStatsDoubleRegister(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	RegisterRuntimeMemStats(r)
 	storedGauge := r.Get("state.MemStats.LastGC").(guage.Gauge)
 
@@ -32,7 +32,7 @@ func TestRuntimeMemStatsDoubleRegister(t *testing.T) {
 }
 
 func BenchmarkRuntimeMemStats(b *testing.B) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	RegisterRuntimeMemStats(r)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -41,7 +41,7 @@ func BenchmarkRuntimeMemStats(b *testing.B) {
 }
 
 func TestRuntimeMemStats(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	RegisterRuntimeMemStats(r)
 	CaptureRuntimeMemStatsOnce(r)
 	zero := runtimeMetrics.MemStats.PauseNs.Count() // Get a "zero" since GC may have state before these tests.
@@ -73,7 +73,7 @@ func TestRuntimeMemStats(t *testing.T) {
 }
 
 func TestRuntimeMemStatsNumThread(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	RegisterRuntimeMemStats(r)
 	CaptureRuntimeMemStatsOnce(r)
 

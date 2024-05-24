@@ -1,9 +1,9 @@
 package state
 
 import (
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
+	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/sample"
 	"github.com/someview/go-metrics/timer"
 	"runtime/debug"
@@ -28,7 +28,7 @@ var (
 
 // Capture new values for the Go garbage collector statistics exported in
 // debug.GCStats.  This is designed to be called as a goroutine.
-func CaptureDebugGCStats(r metrics.Registry, d time.Duration) {
+func CaptureDebugGCStats(r reporter.Registry, d time.Duration) {
 	for _ = range time.Tick(d) {
 		CaptureDebugGCStatsOnce(r)
 	}
@@ -42,7 +42,7 @@ func CaptureDebugGCStats(r metrics.Registry, d time.Duration) {
 // Be careful (but much less so) with this because debug.ReadGCStats calls
 // the C function state·lock(state·mheap) which, while not a stop-the-world
 // operation, isn't something you want to be doing all the time.
-func CaptureDebugGCStatsOnce(r metrics.Registry) {
+func CaptureDebugGCStatsOnce(r reporter.Registry) {
 	lastGC := gcStats.LastGC
 	t := time.Now()
 	debug.ReadGCStats(&gcStats)
@@ -60,7 +60,7 @@ func CaptureDebugGCStatsOnce(r metrics.Registry) {
 // Register metrics for the Go garbage collector statistics exported in
 // debug.GCStats.  The metrics are named by their fully-qualified Go symbols,
 // i.e. debug.GCStats.PauseTotal.
-func RegisterDebugGCStats(r metrics.Registry) {
+func RegisterDebugGCStats(r reporter.Registry) {
 	registerDebugMetricsOnce.Do(func() {
 		debugMetrics.GCStats.LastGC = guage.NewGauge()
 		debugMetrics.GCStats.NumGC = guage.NewGauge()

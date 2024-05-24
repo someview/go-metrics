@@ -1,8 +1,8 @@
 package state
 
 import (
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/guage"
+	"github.com/someview/go-metrics/reporter"
 	"runtime"
 	"runtime/debug"
 	"testing"
@@ -10,7 +10,7 @@ import (
 )
 
 func BenchmarkDebugGCStats(b *testing.B) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	RegisterDebugGCStats(r)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -50,7 +50,7 @@ func testDebugGCStatsBlocking(ch chan int) {
 }
 
 func TestDebugGCStatsDoubleRegister(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	RegisterDebugGCStats(r)
 	var storedGauge = (r.Get("debug.GCStats.LastGC")).(guage.Gauge)
 

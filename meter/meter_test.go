@@ -1,7 +1,7 @@
 package meter
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"math/rand"
 	"sync"
 	"testing"
@@ -54,7 +54,7 @@ func TestMeterConcurrency(t *testing.T) {
 }
 
 func TestGetOrRegisterMeter(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredMeter("foo", r).Mark(47)
 	if m := GetOrRegisterMeter("foo", r); 47 != m.Count() {
 		t.Fatal(m)

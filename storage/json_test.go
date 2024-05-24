@@ -3,15 +3,15 @@ package storage
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/counter"
+	"github.com/someview/go-metrics/reporter"
 	"testing"
 )
 
 func TestRegistryMarshallJSON(t *testing.T) {
 	b := &bytes.Buffer{}
 	enc := json.NewEncoder(b)
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	r.Register("counter", counter.NewCounter())
 	enc.Encode(r)
 	if s := b.String(); "{\"counter\":{\"count\":0}}\n" != s {
@@ -20,7 +20,7 @@ func TestRegistryMarshallJSON(t *testing.T) {
 }
 
 func TestRegistryWriteJSONOnce(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	r.Register("counter", counter.NewCounter())
 	b := &bytes.Buffer{}
 	WriteJSONOnce(r, b)

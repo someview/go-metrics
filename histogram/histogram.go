@@ -1,7 +1,7 @@
 package histogram
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	. "github.com/someview/go-metrics/sample"
 )
 
@@ -24,9 +24,9 @@ type Histogram interface {
 
 // GetOrRegisterHistogram returns an existing Histogram or constructs and
 // registers a new StandardHistogram.
-func GetOrRegisterHistogram(name string, r metrics.Registry, s Sample) Histogram {
+func GetOrRegisterHistogram(name string, r reporter.Registry, s Sample) Histogram {
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	return r.GetOrRegister(name, func() Histogram { return NewHistogram(s) }).(Histogram)
 }
@@ -38,10 +38,10 @@ func NewHistogram(s Sample) Histogram {
 
 // NewRegisteredHistogram constructs and registers a new StandardHistogram from
 // a Sample.
-func NewRegisteredHistogram(name string, r metrics.Registry, s Sample) Histogram {
+func NewRegisteredHistogram(name string, r reporter.Registry, s Sample) Histogram {
 	c := NewHistogram(s)
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	r.Register(name, c)
 	return c

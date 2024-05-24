@@ -5,6 +5,7 @@ import (
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/timer"
 	"time"
 )
@@ -14,19 +15,19 @@ type Logger interface {
 }
 
 // Log outputs each metric in the given registry periodically using the given logger.
-func Log(r Registry, freq time.Duration, l Logger) {
+func Log(r reporter.Registry, freq time.Duration, l Logger) {
 	LogScaled(r, freq, time.Nanosecond, l)
 }
 
 // LogOnCue outputs each metric in the given registry on demand through the channel
 // using the given logger
-func LogOnCue(r Registry, ch chan interface{}, l Logger) {
+func LogOnCue(r reporter.Registry, ch chan interface{}, l Logger) {
 	LogScaledOnCue(r, ch, time.Nanosecond, l)
 }
 
 // LogScaled outputs each metric in the given registry periodically using the given
 // logger. Print timings in `scale` units (eg time.Millisecond) rather than nanos.
-func LogScaled(r Registry, freq time.Duration, scale time.Duration, l Logger) {
+func LogScaled(r reporter.Registry, freq time.Duration, scale time.Duration, l Logger) {
 	ch := make(chan interface{})
 	go func(channel chan interface{}) {
 		for _ = range time.Tick(freq) {
@@ -39,7 +40,7 @@ func LogScaled(r Registry, freq time.Duration, scale time.Duration, l Logger) {
 // LogScaledOnCue outputs each metric in the given registry on demand through the channel
 // using the given logger. Print timings in `scale` units (eg time.Millisecond) rather
 // than nanos.
-func LogScaledOnCue(r Registry, ch chan interface{}, scale time.Duration, l Logger) {
+func LogScaledOnCue(r reporter.Registry, ch chan interface{}, scale time.Duration, l Logger) {
 	du := float64(scale)
 	duSuffix := scale.String()[1:]
 

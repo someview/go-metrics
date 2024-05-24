@@ -1,7 +1,7 @@
 package meter
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"math"
 	"sync"
 	"sync/atomic"
@@ -25,9 +25,9 @@ type Meter interface {
 // new StandardMeter.
 // Be sure to unregister the meter from the registry once it is of no use to
 // allow for garbage collection.
-func GetOrRegisterMeter(name string, r metrics.Registry) Meter {
+func GetOrRegisterMeter(name string, r reporter.Registry) Meter {
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	return r.GetOrRegister(name, NewMeter).(Meter)
 }
@@ -50,10 +50,10 @@ func NewMeter() Meter {
 // goroutine.
 // Be sure to unregister the meter from the registry once it is of no use to
 // allow for garbage collection.
-func NewRegisteredMeter(name string, r metrics.Registry) Meter {
+func NewRegisteredMeter(name string, r reporter.Registry) Meter {
 	c := NewMeter()
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	r.Register(name, c)
 	return c

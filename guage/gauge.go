@@ -1,7 +1,7 @@
 package guage
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"sync/atomic"
 )
 
@@ -14,9 +14,9 @@ type Gauge interface {
 
 // GetOrRegisterGauge returns an existing Gauge or constructs and registers a
 // new StandardGauge.
-func GetOrRegisterGauge(name string, r metrics.Registry) Gauge {
+func GetOrRegisterGauge(name string, r reporter.Registry) Gauge {
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	return r.GetOrRegister(name, NewGauge).(Gauge)
 }
@@ -27,10 +27,10 @@ func NewGauge() Gauge {
 }
 
 // NewRegisteredGauge constructs and registers a new StandardGauge.
-func NewRegisteredGauge(name string, r metrics.Registry) Gauge {
+func NewRegisteredGauge(name string, r reporter.Registry) Gauge {
 	c := NewGauge()
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	r.Register(name, c)
 	return c
@@ -42,10 +42,10 @@ func NewFunctionalGauge(f func() int64) Gauge {
 }
 
 // NewRegisteredFunctionalGauge constructs and registers a new StandardGauge.
-func NewRegisteredFunctionalGauge(name string, r metrics.Registry, f func() int64) Gauge {
+func NewRegisteredFunctionalGauge(name string, r reporter.Registry, f func() int64) Gauge {
 	c := NewFunctionalGauge(f)
 	if nil == r {
-		r = metrics.DefaultRegistry
+		r = reporter.DefaultRegistry
 	}
 	r.Register(name, c)
 	return c

@@ -3,6 +3,7 @@ package timer
 import (
 	"fmt"
 	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/storage"
 	"math"
 	"os"
@@ -19,7 +20,7 @@ func BenchmarkTimer(b *testing.B) {
 }
 
 func TestGetOrRegisterTimer(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredTimer("foo", r).Update(47)
 	if tm := GetOrRegisterTimer("foo", r); 1 != tm.Count() {
 		t.Fatal(tm)
@@ -109,9 +110,9 @@ func TestDefaultTimer(t *testing.T) {
 	for i := 0; i < 1028; i++ {
 		timer.Update(time.Second)
 	}
-	storage.WriteOnce(metrics.DefaultRegistry, os.Stdout)
+	storage.WriteOnce(reporter.DefaultRegistry, os.Stdout)
 	for i := 0; i < 10; i++ {
 		timer.Update(time.Minute)
 	}
-	storage.WriteOnce(metrics.DefaultRegistry, os.Stdout)
+	storage.WriteOnce(reporter.DefaultRegistry, os.Stdout)
 }

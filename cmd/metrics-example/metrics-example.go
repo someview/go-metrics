@@ -6,6 +6,7 @@ import (
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
 	"github.com/someview/go-metrics/meter"
+	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/sample"
 	"github.com/someview/go-metrics/state"
 	"github.com/someview/go-metrics/timer"
@@ -19,7 +20,7 @@ const fanout = 10
 
 func main() {
 
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 
 	c := counter.NewCounter()
 	r.Register("foo", c)

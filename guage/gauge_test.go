@@ -2,7 +2,7 @@ package guage
 
 import (
 	"fmt"
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"math/rand"
 	"sync"
 	"testing"
@@ -52,7 +52,7 @@ func TestGaugeSnapshot(t *testing.T) {
 }
 
 func TestGetOrRegisterGauge(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredGauge("foo", r).Update(47)
 	if g := GetOrRegisterGauge("foo", r); 47 != g.Value() {
 		t.Fatal(g)
@@ -73,7 +73,7 @@ func TestFunctionalGauge(t *testing.T) {
 }
 
 func TestGetOrRegisterFunctionalGauge(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredFunctionalGauge("foo", r, func() int64 { return 47 })
 	if g := GetOrRegisterGauge("foo", r); 47 != g.Value() {
 		t.Fatal(g)

@@ -1,7 +1,7 @@
 package counter
 
 import (
-	"github.com/someview/go-metrics"
+	"github.com/someview/go-metrics/reporter"
 	"testing"
 )
 
@@ -72,7 +72,7 @@ func TestCounterZero(t *testing.T) {
 }
 
 func TestGetOrRegisterCounter(t *testing.T) {
-	r := metrics.NewRegistry()
+	r := reporter.NewRegistry()
 	NewRegisteredCounter("foo", r).Inc(47)
 	if c := GetOrRegisterCounter("foo", r); 47 != c.Count() {
 		t.Fatal(c)
