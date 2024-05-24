@@ -1,7 +1,6 @@
 package guage
 
 import (
-	"github.com/someview/go-metrics/reporter"
 	"sync/atomic"
 )
 
@@ -17,29 +16,9 @@ func NewGauge() Gauge {
 	return &StandardGauge{0}
 }
 
-// NewRegisteredGauge constructs and registers a new StandardGauge.
-func NewRegisteredGauge(name string, r reporter.Registry) Gauge {
-	c := NewGauge()
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
-}
-
 // NewFunctionalGauge constructs a new FunctionalGauge.
 func NewFunctionalGauge(f func() int64) Gauge {
 	return &FunctionalGauge{value: f}
-}
-
-// NewRegisteredFunctionalGauge constructs and registers a new StandardGauge.
-func NewRegisteredFunctionalGauge(name string, r reporter.Registry, f func() int64) Gauge {
-	c := NewFunctionalGauge(f)
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
 }
 
 // GaugeSnapshot is a read-only copy of another Gauge.

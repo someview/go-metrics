@@ -1,7 +1,6 @@
 package histogram
 
 import (
-	"github.com/someview/go-metrics/reporter"
 	. "github.com/someview/go-metrics/sample"
 )
 
@@ -25,17 +24,6 @@ type Histogram interface {
 // NewHistogram constructs a new StandardHistogram from a Sample.
 func NewHistogram(s Sample) Histogram {
 	return &StandardHistogram{sample: s}
-}
-
-// NewRegisteredHistogram constructs and registers a new StandardHistogram from
-// a Sample.
-func NewRegisteredHistogram(name string, r reporter.Registry, s Sample) Histogram {
-	c := NewHistogram(s)
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
 }
 
 // HistogramSnapshot is a read-only copy of another Histogram.

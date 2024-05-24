@@ -26,6 +26,15 @@ func GetOrRegisterGauge(name string, r Registry) guage.Gauge {
 	return r.GetOrRegister(name, guage.NewGauge).(guage.Gauge)
 }
 
+// GetOrRegisterGaugeFloat64 returns an existing GaugeFloat64 or constructs and registers a
+// new StandardGaugeFloat64.
+func GetOrRegisterGaugeFloat64(name string, r Registry) guage.GaugeFloat64 {
+	if nil == r {
+		r = DefaultRegistry
+	}
+	return r.GetOrRegister(name, guage.NewGaugeFloat64()).(guage.GaugeFloat64)
+}
+
 // GetOrRegisterHistogram returns an existing Histogram or constructs and
 // registers a new StandardHistogram.
 func GetOrRegisterHistogram(name string, r Registry, s sample.Sample) histogram.Histogram {

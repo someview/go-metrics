@@ -1,7 +1,6 @@
 package guage
 
 import (
-	"github.com/someview/go-metrics/reporter"
 	"math"
 	"sync/atomic"
 )
@@ -13,15 +12,6 @@ type GaugeFloat64 interface {
 	Value() float64
 }
 
-// GetOrRegisterGaugeFloat64 returns an existing GaugeFloat64 or constructs and registers a
-// new StandardGaugeFloat64.
-func GetOrRegisterGaugeFloat64(name string, r reporter.Registry) GaugeFloat64 {
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	return r.GetOrRegister(name, NewGaugeFloat64()).(GaugeFloat64)
-}
-
 // NewGaugeFloat64 constructs a new StandardGaugeFloat64.
 func NewGaugeFloat64() GaugeFloat64 {
 	return &StandardGaugeFloat64{
@@ -29,29 +19,9 @@ func NewGaugeFloat64() GaugeFloat64 {
 	}
 }
 
-// NewRegisteredGaugeFloat64 constructs and registers a new StandardGaugeFloat64.
-func NewRegisteredGaugeFloat64(name string, r reporter.Registry) GaugeFloat64 {
-	c := NewGaugeFloat64()
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
-}
-
 // NewFunctionalGauge constructs a new FunctionalGauge.
 func NewFunctionalGaugeFloat64(f func() float64) GaugeFloat64 {
 	return &FunctionalGaugeFloat64{value: f}
-}
-
-// NewRegisteredFunctionalGauge constructs and registers a new StandardGauge.
-func NewRegisteredFunctionalGaugeFloat64(name string, r reporter.Registry, f func() float64) GaugeFloat64 {
-	c := NewFunctionalGaugeFloat64(f)
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
 }
 
 // GaugeFloat64Snapshot is a read-only copy of another GaugeFloat64.
