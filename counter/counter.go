@@ -1,7 +1,6 @@
 package counter
 
 import (
-	"github.com/someview/go-metrics/reporter"
 	"sync/atomic"
 )
 
@@ -14,28 +13,9 @@ type Counter interface {
 	Snapshot() Counter
 }
 
-// GetOrRegisterCounter returns an existing Counter or constructs and registers
-// a new StandardCounter.
-func GetOrRegisterCounter(name string, r reporter.Registry) Counter {
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	return r.GetOrRegister(name, NewCounter).(Counter)
-}
-
 // NewCounter constructs a new StandardCounter.
 func NewCounter() Counter {
 	return &StandardCounter{0}
-}
-
-// NewRegisteredCounter constructs and registers a new StandardCounter.
-func NewRegisteredCounter(name string, r reporter.Registry) Counter {
-	c := NewCounter()
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
 }
 
 // CounterSnapshot is a read-only copy of another Counter.

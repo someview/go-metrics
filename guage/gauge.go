@@ -12,15 +12,6 @@ type Gauge interface {
 	Value() int64
 }
 
-// GetOrRegisterGauge returns an existing Gauge or constructs and registers a
-// new StandardGauge.
-func GetOrRegisterGauge(name string, r reporter.Registry) Gauge {
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	return r.GetOrRegister(name, NewGauge).(Gauge)
-}
-
 // NewGauge constructs a new StandardGauge.
 func NewGauge() Gauge {
 	return &StandardGauge{0}
