@@ -4,15 +4,17 @@ import (
 	"sync"
 )
 
+// SlidingWindowSample is a sample that stores values in a ring buffer.
+// When get snapshot, it's return snapshot and reset the sampler
 type SlidingWindowSample struct {
 	mutex  sync.Mutex
 	values []int64
-	size   int
-	index  int
+	size   uint64
+	index  uint64
 	count  int64
 }
 
-func NewSlidingWindowSample(size int) Sample {
+func NewSlidingWindowSample(size uint64) Sample {
 	return &SlidingWindowSample{
 		size:   size,
 		values: make([]int64, size),
@@ -83,11 +85,16 @@ func (s *SlidingWindowSample) Size() int {
 // Snapshot returns a read-only copy of the sample.
 func (s *SlidingWindowSample) Snapshot() Sample {
 	s.mutex.Lock()
-	values := make([]int64, len(s.values))
-	copy(values, s.values)
-	res := NewSampleSnapshot(s.count, values)
-	s.mutex.Unlock()
+	defer s.mutex.Unlock()
+	res := NewSampleSnapshot(s.count, s.values[:s.count])
+	s.reset()
 	return res
+}
+
+func (s *SlidingWindowSample) reset() {
+	s.values = make([]int64, s.size)
+	s.index = 0
+	s.count = 0
 }
 
 // StdDev returns the standard deviation of the values in the sample.
