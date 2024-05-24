@@ -22,15 +22,6 @@ type Histogram interface {
 	Variance() float64
 }
 
-// GetOrRegisterHistogram returns an existing Histogram or constructs and
-// registers a new StandardHistogram.
-func GetOrRegisterHistogram(name string, r reporter.Registry, s Sample) Histogram {
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	return r.GetOrRegister(name, func() Histogram { return NewHistogram(s) }).(Histogram)
-}
-
 // NewHistogram constructs a new StandardHistogram from a Sample.
 func NewHistogram(s Sample) Histogram {
 	return &StandardHistogram{sample: s}

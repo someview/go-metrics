@@ -1,7 +1,6 @@
 package meter
 
 import (
-	"github.com/someview/go-metrics/reporter"
 	"math"
 	"sync"
 	"sync/atomic"
@@ -21,17 +20,6 @@ type Meter interface {
 	Stop()
 }
 
-// GetOrRegisterMeter returns an existing Meter or constructs and registers a
-// new StandardMeter.
-// Be sure to unregister the meter from the registry once it is of no use to
-// allow for garbage collection.
-func GetOrRegisterMeter(name string, r reporter.Registry) Meter {
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	return r.GetOrRegister(name, NewMeter).(Meter)
-}
-
 // NewMeter constructs a new StandardMeter and launches a goroutine.
 // Be sure to call Stop() once the meter is of no use to allow for garbage collection.
 func NewMeter() Meter {
@@ -44,19 +32,6 @@ func NewMeter() Meter {
 		go arbiter.tick()
 	}
 	return m
-}
-
-// NewMeter constructs and registers a new StandardMeter and launches a
-// goroutine.
-// Be sure to unregister the meter from the registry once it is of no use to
-// allow for garbage collection.
-func NewRegisteredMeter(name string, r reporter.Registry) Meter {
-	c := NewMeter()
-	if nil == r {
-		r = reporter.DefaultRegistry
-	}
-	r.Register(name, c)
-	return c
 }
 
 // MeterSnapshot is a read-only copy of another Meter.
