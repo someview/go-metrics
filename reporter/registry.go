@@ -6,7 +6,6 @@ import (
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
 	"reflect"
-	"strings"
 	"sync"
 )
 
@@ -33,7 +32,7 @@ type Registry interface {
 	Get(string) interface{}
 
 	// GetAll metrics in the Registry.
-	GetAll() map[string]map[string]interface{}
+	GetAll() []NamedMetric
 
 	// Gets an existing metric or registers the given one.
 	// The interface can be the metric to register if not found in registry,
@@ -53,8 +52,9 @@ type Registry interface {
 // The standard implementation of a Registry is a mutex-protected map
 // of names to metrics.
 type StandardRegistry struct {
-	metrics map[string]interface{}
-	mutex   sync.RWMutex
+	metrics      map[string]interface{}
+	namedMetrics []NamedMetric
+	mutex        sync.RWMutex
 }
 
 // Create a new registry.
@@ -113,42 +113,21 @@ func (r *StandardRegistry) Register(name string, i interface{}) error {
 }
 
 // GetAll metrics in the Registry
-func (r *StandardRegistry) GetAll() map[string]map[string]interface{} {
-	data := make(map[string]map[string]interface{})
-	r.Each(func(name string, i interface{}) {
-		values := make(map[string]interface{})
-		switch metric := i.(type) {
-		case counter.Counter:
-			values["count"] = metric.Snapshot()
-		case guage.Gauge:
-			values["value"] = metric.SnapShotAndReset()
-		case guage.GaugeFloat64:
-			values["value"] = metric.SnapshotAndReset()
-		case histogram.Histogram:
-			h := metric.Sample().SnapshotAndReset()
-			ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
-			values["count"] = h.Count()
-			values["min"] = h.Min()
-			values["max"] = h.Max()
-			values["mean"] = h.Mean()
-			values["stddev"] = h.StdDev()
-			values["median"] = ps[0]
-			values["75%"] = ps[1]
-			values["95%"] = ps[2]
-			values["99%"] = ps[3]
-			values["99.9%"] = ps[4]
-		}
-		data[name] = values
-	})
-	return data
+func (r *StandardRegistry) GetAll() []NamedMetric {
+	return r.namedMetrics
 }
 
 // Unregister the metric with the given name.
 func (r *StandardRegistry) Unregister(name string) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
-	r.stop(name)
 	delete(r.metrics, name)
+	for i := range r.namedMetrics {
+		if r.namedMetrics[i].name == name {
+			r.namedMetrics = append(r.namedMetrics[:i], r.namedMetrics[i+1:]...)
+			break
+		}
+	}
 }
 
 // Unregister all metrics.  (Mostly for testing.)
@@ -156,9 +135,9 @@ func (r *StandardRegistry) UnregisterAll() {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	for name, _ := range r.metrics {
-		r.stop(name)
 		delete(r.metrics, name)
 	}
+	r.namedMetrics = nil
 }
 
 func (r *StandardRegistry) register(name string, i interface{}) error {
@@ -168,6 +147,7 @@ func (r *StandardRegistry) register(name string, i interface{}) error {
 	switch i.(type) {
 	case counter.Counter, guage.Gauge, guage.GaugeFloat64, histogram.Histogram:
 		r.metrics[name] = i
+		r.namedMetrics = append(r.namedMetrics, NamedMetric{name: name, m: i})
 	}
 	return nil
 }
@@ -190,98 +170,9 @@ func (r *StandardRegistry) registered() []metricKV {
 	return metrics
 }
 
-func (r *StandardRegistry) stop(name string) {
-	if i, ok := r.metrics[name]; ok {
-		if s, ok := i.(Stoppable); ok {
-			s.Stop()
-		}
-	}
-}
-
-// Stoppable defines the metrics which has to be stopped.
-type Stoppable interface {
-	Stop()
-}
-
 type PrefixedRegistry struct {
 	underlying Registry
 	prefix     string
-}
-
-func NewPrefixedRegistry(prefix string) Registry {
-	return &PrefixedRegistry{
-		underlying: NewRegistry(),
-		prefix:     prefix,
-	}
-}
-
-func NewPrefixedChildRegistry(parent Registry, prefix string) Registry {
-	return &PrefixedRegistry{
-		underlying: parent,
-		prefix:     prefix,
-	}
-}
-
-// Call the given function for each registered metric.
-func (r *PrefixedRegistry) Each(fn func(string, interface{})) {
-	wrappedFn := func(prefix string) func(string, interface{}) {
-		return func(name string, iface interface{}) {
-			if strings.HasPrefix(name, prefix) {
-				fn(name, iface)
-			} else {
-				return
-			}
-		}
-	}
-
-	baseRegistry, prefix := findPrefix(r, "")
-	baseRegistry.Each(wrappedFn(prefix))
-}
-
-func findPrefix(registry Registry, prefix string) (Registry, string) {
-	switch r := registry.(type) {
-	case *PrefixedRegistry:
-		return findPrefix(r.underlying, r.prefix+prefix)
-	case *StandardRegistry:
-		return r, prefix
-	}
-	return nil, ""
-}
-
-// Get the metric by the given name or nil if none is registered.
-func (r *PrefixedRegistry) Get(name string) interface{} {
-	realName := r.prefix + name
-	return r.underlying.Get(realName)
-}
-
-// Gets an existing metric or registers the given one.
-// The interface can be the metric to register if not found in registry,
-// or a function returning the metric for lazy instantiation.
-func (r *PrefixedRegistry) GetOrRegister(name string, metric interface{}) interface{} {
-	realName := r.prefix + name
-	return r.underlying.GetOrRegister(realName, metric)
-}
-
-// Register the given metric under the given name. The name will be prefixed.
-func (r *PrefixedRegistry) Register(name string, metric interface{}) error {
-	realName := r.prefix + name
-	return r.underlying.Register(realName, metric)
-}
-
-// GetAll metrics in the Registry
-func (r *PrefixedRegistry) GetAll() map[string]map[string]interface{} {
-	return r.underlying.GetAll()
-}
-
-// Unregister the metric with the given name. The name will be prefixed.
-func (r *PrefixedRegistry) Unregister(name string) {
-	realName := r.prefix + name
-	r.underlying.Unregister(realName)
-}
-
-// Unregister all metrics.  (Mostly for testing.)
-func (r *PrefixedRegistry) UnregisterAll() {
-	r.underlying.UnregisterAll()
 }
 
 var DefaultRegistry Registry = NewRegistry()

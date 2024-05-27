@@ -6,8 +6,8 @@ import (
 
 // Counter hold an int64 value that can be incremented and decremented.
 type Counter interface {
-	Dec(int64)
 	Inc(int64)
+	Swap(int64) int64
 	Snapshot() int64
 	SnapshotAndReset() int64
 }
@@ -28,11 +28,6 @@ func NewCounter() Counter {
 // 返回值: CounterSnapshot - 计数器快照，包含重置前的计数器值
 func (c *StandardCounter) SnapshotAndReset() int64 {
 	return atomic.SwapInt64(&c.count, 0)
-}
-
-// Dec decrements the counter by the given amount.
-func (c *StandardCounter) Dec(i int64) {
-	atomic.AddInt64(&c.count, -i)
 }
 
 // Inc increments the counter by the given amount.

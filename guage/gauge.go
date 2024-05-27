@@ -6,7 +6,8 @@ import (
 
 // Gauges hold an int64 value that can be set arbitrarily.
 type Gauge interface {
-	Update(int64)
+	Inc(int64)
+	Swap(int64) int64
 	Snapshot() int64
 	SnapShotAndReset() int64
 }
@@ -17,9 +18,13 @@ type standardGauge struct {
 	value int64
 }
 
+func (g *standardGauge) Swap(i int64) int64 {
+	return atomic.SwapInt64(&g.value, i)
+}
+
 // Update updates the gauge's value.
-func (g *standardGauge) Update(v int64) {
-	atomic.StoreInt64(&g.value, v)
+func (g *standardGauge) Inc(v int64) {
+	atomic.AddInt64(&g.value, v)
 }
 
 func (g *standardGauge) Snapshot() int64 {

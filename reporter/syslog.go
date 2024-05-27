@@ -5,7 +5,6 @@ package reporter
 
 import (
 	"fmt"
-	"github.com/someview/go-metrics"
 	"github.com/someview/go-metrics/counter"
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
@@ -25,9 +24,6 @@ func Syslog(r Registry, d time.Duration, w *syslog.Writer) {
 				w.Info(fmt.Sprintf("gauge %s: value: %d", name, metric.Value()))
 			case guage.GaugeFloat64:
 				w.Info(fmt.Sprintf("gauge %s: value: %f", name, metric.Value()))
-			case metrics.Healthcheck:
-				metric.Check()
-				w.Info(fmt.Sprintf("healthcheck %s: error: %v", name, metric.Error()))
 			case histogram.Histogram:
 				h := metric.Snapshot()
 				ps := h.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
