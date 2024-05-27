@@ -64,7 +64,8 @@ func (s *stdReporter) ReportPeriodically(ctx context.Context, interval time.Dura
 					slog.Info(
 						"histogram",
 						slog.String("name", name),
-						slog.Int64("count", h.Count()),
+						slog.Int64("count", h.ReqCount()),
+						slog.Int64("sample", h.Count()),
 						slog.Int64("min", h.Min()),
 						slog.Int64("max", h.Max()),
 						slog.Float64("mean", h.Mean()),
