@@ -53,16 +53,16 @@ func (s *stdReporter) ReportPeriodically(ctx context.Context, interval time.Dura
 				metric := metricVal.Value()
 				switch instance := metric.(type) {
 				case counter.Counter:
-					slog.Info("counter", slog.String("name", name), slog.Int64("val", instance.Snapshot()))
+					slog.Info("", slog.String("name", name), slog.Int64("val", instance.Snapshot()))
 				case guage.Gauge:
-					slog.Info("gauge", slog.String("name", name), slog.Int64("val", instance.SnapShotAndReset()))
+					slog.Info("", slog.String("name", name), slog.Int64("val", instance.SnapShotAndReset()))
 				case guage.GaugeFloat64:
-					slog.Info("gauge", slog.String("name", name), slog.Float64("val", instance.SnapshotAndReset()))
+					slog.Info("", slog.String("name", name), slog.Float64("val", instance.SnapshotAndReset()))
 				case histogram.Histogram:
 					h := instance.Sample().SnapshotAndReset()
 					ps := h.Percentiles([]float64{0.5, 0.95, 0.99, 0.999})
 					slog.Info(
-						"histogram",
+						"",
 						slog.String("name", name),
 						slog.Int64("count", h.ReqCount()),
 						slog.Int64("sample", h.Count()),
