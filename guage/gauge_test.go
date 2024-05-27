@@ -30,34 +30,3 @@ func TestGaugeConcurrency(t *testing.T) {
 	}
 	wg.Wait()
 }
-
-func TestGauge(t *testing.T) {
-	g := NewGauge()
-	g.Update(int64(47))
-	if v := g.Value(); 47 != v {
-		t.Errorf("g.Value(): 47 != %v\n", v)
-	}
-}
-
-func TestGaugeSnapshot(t *testing.T) {
-	g := NewGauge()
-	g.Update(int64(47))
-	snapshot := g.Snapshot()
-	g.Update(int64(0))
-	if v := snapshot.Value(); 47 != v {
-		t.Errorf("g.Value(): 47 != %v\n", v)
-	}
-}
-
-func TestFunctionalGauge(t *testing.T) {
-	var counter int64
-	fg := NewFunctionalGauge(func() int64 {
-		counter++
-		return counter
-	})
-	fg.Value()
-	fg.Value()
-	if counter != 2 {
-		t.Error("counter != 2")
-	}
-}

@@ -25,9 +25,8 @@ type StandardGaugeFloat64 struct {
 	value uint64
 }
 
-func (g *StandardGaugeFloat64) Value() float64 {
-	//TODO implement me
-	panic("implement me")
+func (g *StandardGaugeFloat64) SnapshotAndReset() float64 {
+	return math.Float64frombits(atomic.SwapUint64(&g.value, 0))
 }
 
 func (g *StandardGaugeFloat64) Snapshot() float64 {
