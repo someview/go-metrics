@@ -41,10 +41,7 @@ func NewExpDecaySample(reservoirSize int, alpha float64) Sample {
 func (s *ExpDecaySample) Clear() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	s.count = 0
-	s.t0 = time.Now()
-	s.t1 = s.t0.Add(rescaleThreshold)
-	s.values.Clear()
+	s.reset()
 }
 
 func (s *ExpDecaySample) reset() {
