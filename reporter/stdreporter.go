@@ -45,9 +45,7 @@ type stdReporter struct {
 
 func (s *stdReporter) RegisterMetrics(metrics []NamedMetric) {
 	s.metrics = metrics
-	for _, metric := range metrics {
-		s.r.Register(metric.name, metric.m)
-	}
+
 }
 
 func (s *stdReporter) Metrics() []NamedMetric {
@@ -105,8 +103,13 @@ func (s *stdReporter) ReportPeriodically(ctx context.Context, interval time.Dura
 	}
 }
 
-func NewStdReporter(r Registry) Reporter {
-	return &stdReporter{
-		r: r,
+func NewStdReporter(metrics []NamedMetric) Reporter {
+	res := &stdReporter{
+		r:       NewRegistry(),
+		metrics: metrics,
 	}
+	for _, metric := range metrics {
+		res.r.Register(metric.name, metric.m)
+	}
+	return res
 }

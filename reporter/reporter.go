@@ -6,7 +6,6 @@ import (
 )
 
 type Reporter interface {
-	RegisterMetrics([]NamedMetric)
 	Metrics() []NamedMetric
 	UpdateHistogram(name string, v int64)
 	IncGauge(name string, v int64)
