@@ -21,6 +21,7 @@ type ExpDecaySample struct {
 	reservoirSize int
 	t0, t1        time.Time
 	values        *expDecaySampleHeap
+	reqCount      int64
 }
 
 // NewExpDecaySample constructs a new exponentially-decaying sample with the
@@ -46,47 +47,12 @@ func (s *ExpDecaySample) Clear() {
 	s.values.Clear()
 }
 
-// Count returns the number of samples recorded, which may exceed the
-// reservoir size.
-func (s *ExpDecaySample) Count() int64 {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	return s.count
-}
-
-// Max returns the maximum value in the sample, which may not be the maximum
-// value ever to be part of the sample.
-func (s *ExpDecaySample) Max() int64 {
-	return SampleMax(s.Values())
-}
-
-// Mean returns the mean of the values in the sample.
-func (s *ExpDecaySample) Mean() float64 {
-	return SampleMean(s.Values())
-}
-
-// Min returns the minimum value in the sample, which may not be the minimum
-// value ever to be part of the sample.
-func (s *ExpDecaySample) Min() int64 {
-	return SampleMin(s.Values())
-}
-
-// Percentile returns an arbitrary percentile of values in the sample.
-func (s *ExpDecaySample) Percentile(p float64) float64 {
-	return SamplePercentile(s.Values(), p)
-}
-
-// Percentiles returns a slice of arbitrary percentiles of values in the
-// sample.
-func (s *ExpDecaySample) Percentiles(ps []float64) []float64 {
-	return SamplePercentiles(s.Values(), ps)
-}
-
-// Size returns the size of the sample, which is at most the reservoir size.
-func (s *ExpDecaySample) Size() int {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	return s.values.Size()
+func (s *ExpDecaySample) reset() {
+	s.count = 0
+	s.reqCount = 0
+	s.t0 = time.Now()
+	s.t1 = s.t0.Add(rescaleThreshold)
+	s.values.Clear()
 }
 
 // Snapshot returns a read-only copy of the sample.
@@ -99,8 +65,9 @@ func (s *ExpDecaySample) Snapshot() SampleSnapshot {
 		values[i] = v.v
 	}
 	return &sampleSnapshot{
-		count:  s.count,
-		values: values,
+		count:    s.count,
+		values:   values,
+		reqCount: s.reqCount,
 	}
 }
 
@@ -112,9 +79,11 @@ func (s *ExpDecaySample) SnapshotAndReset() SampleSnapshot {
 	for i, v := range vals {
 		values[i] = v.v
 	}
+	s.reset()
 	return &sampleSnapshot{
-		count:  s.count,
-		values: values,
+		count:    s.count,
+		values:   values,
+		reqCount: s.reqCount,
 	}
 }
 
@@ -138,7 +107,7 @@ func (s *ExpDecaySample) Update(v int64) {
 func (s *ExpDecaySample) update(t time.Time, v int64) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	s.count++
+	s.reqCount++
 	if s.values.Size() == s.reservoirSize {
 		s.values.Pop()
 	}
@@ -157,6 +126,7 @@ func (s *ExpDecaySample) update(t time.Time, v int64) {
 			s.values.Push(v)
 		}
 	}
+	s.count = int64(s.values.Size())
 }
 
 // expDecaySample represents an individual sample in a heap.

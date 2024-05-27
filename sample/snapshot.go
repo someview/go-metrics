@@ -2,14 +2,20 @@ package sample
 
 // sampleSnapshot is a read-only copy of another Sample.
 type sampleSnapshot struct {
-	count  int64
-	values []int64
+	reqCount int64
+	count    int64
+	values   []int64
 }
 
-func NewSampleSnapshot(count int64, values []int64) SampleSnapshot {
+func (s *sampleSnapshot) ReqCount() int64 {
+	return s.reqCount
+}
+
+func NewSampleSnapshot(reqCount, count int64, values []int64) SampleSnapshot {
 	return &sampleSnapshot{
-		count:  count,
-		values: values,
+		reqCount: reqCount,
+		count:    count,
+		values:   values,
 	}
 }
 

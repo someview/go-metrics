@@ -10,7 +10,8 @@ type Sample interface {
 }
 
 type SampleSnapshot interface {
-	Count() int64
+	ReqCount() int64 // 请求次数
+	Count() int64    // 采样次数
 	Max() int64
 	Mean() float64
 	Min() int64

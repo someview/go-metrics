@@ -65,18 +65,6 @@ func BenchmarkExpDecaySample1028(b *testing.B) {
 	benchmarkSample(b, NewExpDecaySample(1028, 0.015))
 }
 
-func BenchmarkUniformSample257(b *testing.B) {
-	benchmarkSample(b, NewUniformSample(257))
-}
-
-func BenchmarkUniformSample514(b *testing.B) {
-	benchmarkSample(b, NewUniformSample(514))
-}
-
-func BenchmarkUniformSample1028(b *testing.B) {
-	benchmarkSample(b, NewUniformSample(1028))
-}
-
 // This test makes sure that the sample's priority is not amplified by using
 // nanosecond duration since start rather than second duration since start.
 // The priority becomes +Inf quickly after starting if this is done,
