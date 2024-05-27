@@ -22,12 +22,36 @@ func (n *NamedMetric) Name() string {
 	return n.name
 }
 
+func NewHistogramMetric(name string, m histogram.Histogram) NamedMetric {
+	return NamedMetric{name: name, m: m}
+}
+
+func NewGaugeMetric(name string, m guage.Gauge) NamedMetric {
+	return NamedMetric{name: name, m: m}
+}
+
+func NewGaugeFloat64Metric(name string, m guage.GaugeFloat64) NamedMetric {
+	return NamedMetric{name: name, m: m}
+}
+
+func NewCounterMetric(name string, m counter.Counter) NamedMetric {
+	return NamedMetric{name: name, m: m}
+}
+
 type stdReporter struct {
-	r Registry
+	r       Registry
+	metrics []NamedMetric
+}
+
+func (s *stdReporter) RegisterMetrics(metrics []NamedMetric) {
+	s.metrics = metrics
+	for _, metric := range metrics {
+		s.r.Register(metric.name, metric.m)
+	}
 }
 
 func (s *stdReporter) Metrics() []NamedMetric {
-	return s.r.GetAll()
+	return s.metrics
 }
 
 func (s *stdReporter) UpdateHistogram(name string, v int64) {
