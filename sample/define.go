@@ -4,6 +4,12 @@ package sample
 // a stream.
 type Sample interface {
 	Clear()
+	Snapshot() SampleSnapshot
+	SnapshotAndReset() SampleSnapshot
+	Update(int64)
+}
+
+type SampleSnapshot interface {
 	Count() int64
 	Max() int64
 	Mean() float64
@@ -11,10 +17,7 @@ type Sample interface {
 	Percentile(float64) float64
 	Percentiles([]float64) []float64
 	Size() int
-	Snapshot() Sample
-	StdDev() float64
 	Sum() int64
-	Update(int64)
-	Values() []int64
+	StdDev() float64
 	Variance() float64
 }

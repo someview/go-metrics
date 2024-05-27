@@ -90,7 +90,7 @@ func (s *ExpDecaySample) Size() int {
 }
 
 // Snapshot returns a read-only copy of the sample.
-func (s *ExpDecaySample) Snapshot() Sample {
+func (s *ExpDecaySample) Snapshot() SampleSnapshot {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	vals := s.values.Values()
@@ -98,31 +98,28 @@ func (s *ExpDecaySample) Snapshot() Sample {
 	for i, v := range vals {
 		values[i] = v.v
 	}
-	return &SampleSnapshot{
+	return &sampleSnapshot{
 		count:  s.count,
 		values: values,
 	}
 }
 
-// StdDev returns the standard deviation of the values in the sample.
-func (s *ExpDecaySample) StdDev() float64 {
-	return SampleStdDev(s.Values())
-}
-
-// Sum returns the sum of the values in the sample.
-func (s *ExpDecaySample) Sum() int64 {
-	return SampleSum(s.Values())
-}
-
-// Update samples a new value.
-func (s *ExpDecaySample) Update(v int64) {
-	s.update(time.Now(), v)
+func (s *ExpDecaySample) SnapshotAndReset() SampleSnapshot {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	vals := s.values.Values()
+	values := make([]int64, len(vals))
+	for i, v := range vals {
+		values[i] = v.v
+	}
+	return &sampleSnapshot{
+		count:  s.count,
+		values: values,
+	}
 }
 
 // Values returns a copy of the values in the sample.
 func (s *ExpDecaySample) Values() []int64 {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	vals := s.values.Values()
 	values := make([]int64, len(vals))
 	for i, v := range vals {
@@ -131,9 +128,9 @@ func (s *ExpDecaySample) Values() []int64 {
 	return values
 }
 
-// Variance returns the variance of the values in the sample.
-func (s *ExpDecaySample) Variance() float64 {
-	return SampleVariance(s.Values())
+// Update samples a new value.
+func (s *ExpDecaySample) Update(v int64) {
+	s.update(time.Now(), v)
 }
 
 // update samples a new value at a particular timestamp.  This is a method all
@@ -161,16 +158,6 @@ func (s *ExpDecaySample) update(t time.Time, v int64) {
 		}
 	}
 }
-
-// Values returns a copy of the values in the sample.
-func (s *SampleSnapshot) Values() []int64 {
-	values := make([]int64, len(s.values))
-	copy(values, s.values)
-	return values
-}
-
-// Variance returns the variance of values at the time the snapshot was taken.
-func (s *SampleSnapshot) Variance() float64 { return SampleVariance(s.values) }
 
 // expDecaySample represents an individual sample in a heap.
 type expDecaySample struct {
