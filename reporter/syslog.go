@@ -9,8 +9,6 @@ import (
 	"github.com/someview/go-metrics/counter"
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
-	"github.com/someview/go-metrics/meter"
-	"github.com/someview/go-metrics/timer"
 	"log/syslog"
 	"time"
 )
@@ -46,38 +44,6 @@ func Syslog(r Registry, d time.Duration, w *syslog.Writer) {
 					ps[2],
 					ps[3],
 					ps[4],
-				))
-			case meter.Meter:
-				m := metric.Snapshot()
-				w.Info(fmt.Sprintf(
-					"meter %s: count: %d 1-min: %.2f 5-min: %.2f 15-min: %.2f mean: %.2f",
-					name,
-					m.Count(),
-					m.Rate1(),
-					m.Rate5(),
-					m.Rate15(),
-					m.RateMean(),
-				))
-			case timer.Timer:
-				t := metric.Snapshot()
-				ps := t.Percentiles([]float64{0.5, 0.75, 0.95, 0.99, 0.999})
-				w.Info(fmt.Sprintf(
-					"timer %s: count: %d min: %d max: %d mean: %.2f stddev: %.2f median: %.2f 75%%: %.2f 95%%: %.2f 99%%: %.2f 99.9%%: %.2f 1-min: %.2f 5-min: %.2f 15-min: %.2f mean-rate: %.2f",
-					name,
-					t.Count(),
-					t.Min(),
-					t.Max(),
-					t.Mean(),
-					t.StdDev(),
-					ps[0],
-					ps[1],
-					ps[2],
-					ps[3],
-					ps[4],
-					t.Rate1(),
-					t.Rate5(),
-					t.Rate15(),
-					t.RateMean(),
 				))
 			}
 		})

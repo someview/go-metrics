@@ -5,11 +5,8 @@ import (
 	"github.com/someview/go-metrics/counter"
 	"github.com/someview/go-metrics/guage"
 	"github.com/someview/go-metrics/histogram"
-	"github.com/someview/go-metrics/meter"
 	"github.com/someview/go-metrics/reporter"
 	"github.com/someview/go-metrics/sample"
-	"github.com/someview/go-metrics/state"
-	"github.com/someview/go-metrics/timer"
 	"log"
 	"os"
 	// "syslog"
@@ -91,44 +88,6 @@ func main() {
 			}
 		}()
 	}
-
-	m := meter.NewMeter()
-	r.Register("quux", m)
-	for i := 0; i < fanout; i++ {
-		go func() {
-			for {
-				m.Mark(19)
-				time.Sleep(300e6)
-			}
-		}()
-		go func() {
-			for {
-				m.Mark(47)
-				time.Sleep(400e6)
-			}
-		}()
-	}
-
-	t := timer.NewTimer()
-	r.Register("hooah", t)
-	for i := 0; i < fanout; i++ {
-		go func() {
-			for {
-				t.Time(func() { time.Sleep(300e6) })
-			}
-		}()
-		go func() {
-			for {
-				t.Time(func() { time.Sleep(400e6) })
-			}
-		}()
-	}
-
-	state.RegisterDebugGCStats(r)
-	go state.CaptureDebugGCStats(r, 5e9)
-
-	state.RegisterRuntimeMemStats(r)
-	go state.CaptureRuntimeMemStats(r, 5e9)
 
 	metrics.Log(r, 60e9, log.New(os.Stderr, "metrics: ", log.Lmicroseconds))
 
