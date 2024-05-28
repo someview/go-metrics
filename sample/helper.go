@@ -1,6 +1,9 @@
 package sample
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
 // SampleStdDev returns the standard deviation of the slice of int64.
 func SampleStdDev(values []int64) float64 {
@@ -77,6 +80,7 @@ func SamplePercentiles(values int64Slice, ps []float64) []float64 {
 	scores := make([]float64, len(ps))
 	size := len(values)
 	if size > 0 {
+		sort.Sort(values)
 		for i, p := range ps {
 			pos := p * float64(size+1)
 			if pos < 1.0 {
